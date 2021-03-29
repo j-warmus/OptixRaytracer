@@ -1,0 +1,4 @@
+C:/Users/josep/source/repos/Optix/project/CMakeFiles/ALL_BUILD.dir
+C:/Users/josep/source/repos/Optix/project/CMakeFiles/ZERO_CHECK.dir
+C:/Users/josep/source/repos/Optix/project/OptiXRenderer/CMakeFiles/OptiXRenderer.dir
+C:/Users/josep/source/repos/Optix/project/sutil/CMakeFiles/sutil_sdk.dir

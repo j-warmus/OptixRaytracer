@@ -49,6 +49,8 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
 
     std::string str, cmd;
 
+    Attributes currentAttributes;
+
     // Read a line in the scene file in each iteration
     while (std::getline(in, str))
     {
@@ -82,13 +84,27 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
             scene->outputFilename = svalues[0];
         }
         else if (cmd == "camera" && readValues(s, 10, fvalues)) {
-            optix::float3 lookfrom = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
-            optix::float3 lookat = optix::make_float3(fvalues[3], fvalues[4], fvalues[5]);
+            optix::float3 eye = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
+            optix::float3 center = optix::make_float3(fvalues[3], fvalues[4], fvalues[5]);
             optix::float3 up  = optix::make_float3(fvalues[6], fvalues[7], fvalues[8]);
-            optix::float1 fov = optix::make_float1(fvalues[9]);
+            
+            float aspect = (float)scene->width / (float)scene->height;
+            float fovy = fvalues[9] * M_PIf / 180.;
+            float fovx = 2. * atan(tan(fovy / 2.) * aspect);
 
-            // TODO pass values to PinholeCamera.cu
-            // need to achieve functionality equivalent to LookAt and setFov
+            // don't change the order of these lines
+            optix::float3 w = optix::normalize(eye - center);
+            optix::float3 u = optix::normalize(optix::cross(up, w));
+            optix::float3 v = optix::cross(w, u);
+
+            // pos, u, v, w are passed in a float3 buffer
+            // fovy, fovx, width, height passed in a float 
+            // TODO pass values to pinholecamera.cu
+            std::vector<optix::float3> cameraPos;
+            std::vector<float> cameraView;
+
+            //Buffer is undefined - should an #include be enough or do I have the wrong idea?
+
         }
         
 
@@ -98,18 +114,16 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
         else if (cmd == "point" && readValues(s, 6, fvalues))
         {
             optix::float3 transfpos = optix::make_float3(transStack.top() * optix::make_float4(fvalues[0], fvalues[1], fvalues[2], 1));
+            optix::float3 color = optix::make_float3(fvalues[3], fvalues[4], fvalues[5]);
             
-            // use fvalues[3-5] for light color in the constructor
-            scene->plights.push_back(PointLight());
-            // TODO determine what to pass into the light objects.  may be the same as original raytracer
+            scene->plights.push_back(PointLight(transfpos, color));
         }
         else if (cmd == "directional" && readValues(s, 6, fvalues))
         {
             optix::float3 transfpos = optix::make_float3(transStack.top() * optix::make_float4(fvalues[0], fvalues[1], fvalues[2], 1));
+            optix::float3 color = optix::make_float3(fvalues[3], fvalues[4], fvalues[5]);
             
-            // use fvalues[3-5] for light color in the constructor
-            scene->dlights.push_back(DirectionalLight());
-            // TODO determine what to pass into the light objects.  may be the same as original raytracer
+            scene->dlights.push_back(DirectionalLight(transfpos, color));
         }
         else if (cmd == "attenuation" && readValues(s, 3, fvalues))
         {
@@ -123,8 +137,7 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
          */
         else if (cmd == "maxdepth" && readValues(s, 1, ivalues))
         {
-            // TODO max recursion depth is set in the renderer.
-            //  save value in Renderer.h before calling SetMaxTraceDepth?
+            scene->maxDepth = ivalues[0];
         }
         
 
@@ -133,24 +146,23 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
         */ 
         else if (cmd == "ambient" && readValues(s, 3, fvalues)) 
         {
-            // TODO  I still have no idea where material values should go for now.
-            // maybe make a struct at the top of this file and pass its values into the geometries?
+            currentAttributes.ambient = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
         }
         else if (cmd == "diffuse" && readValues(s, 3, fvalues)) 
         {
-            // TODO
+            currentAttributes.diffuse = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
         }
         else if (cmd == "specular" && readValues(s, 3, fvalues)) 
         {
-            // TODO
+            currentAttributes.specular = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
         }
         else if (cmd == "emission" && readValues(s, 3, fvalues)) 
         {
-            // TODO
+            currentAttributes.emission = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
         }
         else if (cmd == "shininess" && readValues(s, 3, fvalues)) 
         {
-            // TODO
+            currentAttributes.shininess = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
         }
 
 
@@ -161,36 +173,36 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
         {
             scene->vertices.reserve(ivalues[0]);
         }
-        else if (cmd == "maxvertnorms" && readValues(s, 1, ivalues))        // vertices with normals are optional.  do we want them?
-        {
-            // TODO
-        }
         else if (cmd == "vertex" && readValues(s, 3, fvalues))
         {
             scene->vertices.push_back(optix::make_float3(fvalues[0], fvalues[1], fvalues[2]));
         }
-        else if (cmd == "vertexnormal" && readValues(s, 6, fvalues))
-        {
-            // TODO
-        }
-        /* TODO: combine tri and trinormal, because we only have one
-        *        kind of triangle.  Just compute normals *NOW* for triangles without
-        *        specified normals instead of computing them later.  Normal calculations
-        *        can be generalized between the two types of triangles (although we
-        *        don't need to do those calculations, right?)
-        */
         else if (cmd == "tri" && readValues(s, 3, ivalues))
         {
-            scene->triangles.push_back(Triangle());
-        }
-        else if (cmd == "trinormal" && readValues(s, 3, ivalues))
-        {
-            // TODO
+            scene->triangles.push_back(Triangle(scene->vertices[ivalues[0]], scene->vertices[ivalues[1]], scene->vertices[ivalues[2]], currentAttributes));
         }
         else if (cmd == "sphere" && readValues(s, 4, fvalues))
         {
-            scene->spheres.push_back(Sphere());
+            scene->spheres.push_back(Sphere(optix::make_float3(fvalues[0], fvalues[1], fvalues[2]), optix::make_float1(fvalues[3]), transStack.top(), currentAttributes);
         }
+
+
+        /* 
+        *   Geometry w/ normals     (OPTIONAL)
+        */
+        else if (cmd == "maxvertnorms" && readValues(s, 1, ivalues))
+        {
+            std::cerr << "Command \"maxvertexnorms\" not implemented.\n";
+        }
+        else if (cmd == "vertexnormal" && readValues(s, 6, fvalues))
+        {
+            std::cerr << "Command \"vertexnormal\" not implemented.\n";
+        }
+        else if (cmd == "trinormal" && readValues(s, 3, ivalues))
+        {
+            std::cerr << "Command \"trinormal\" not implemented.\n";
+        }
+
 
 
         /*
@@ -207,11 +219,9 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
             );
         }
         else if (cmd == "rotate" && readValues(s, 4, fvalues)) {
-            // TODO find a way to change fvalues[3] from degrees to radians.
-            // ideally we'd want to find an optix:: function but we might just need to import Math for pi.
-            // we're going to be using pi a lot, so wouldn't optix provide it as a constant?
+            float rads = fvalues[3] * M_PIf / 180.;     // conversion to radians required
             rightMultiply(
-                optix::Matrix4x4::rotate(fvalues[3], optix::make_float3(fvalues[0], fvalues[1], fvalues[2]))
+                optix::Matrix4x4::rotate(rads, optix::make_float3(fvalues[0], fvalues[1], fvalues[2]))
             );
         }
 

@@ -12,7 +12,7 @@ Renderer::Renderer(std::shared_ptr<Scene> scene) : scene(scene)
     context->setEntryPointCount(1); // only one entry point
     context->setPrintEnabled(true); // enable the use of rtPrintf in programs
     context->setPrintBufferSize(2048); 
-    context->setMaxTraceDepth(3); // Set maximum recursion depth.
+    context->setMaxTraceDepth(scene->maxDepth); // Set maximum recursion depth.
 
     // Create the resultBuffer
     resultBuffer = context->createBuffer(RT_BUFFER_OUTPUT); // only device can write

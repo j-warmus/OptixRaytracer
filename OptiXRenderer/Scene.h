@@ -23,6 +23,7 @@ struct Scene
     std::vector<PointLight> plights;
 
     // TODO: add other variables that you need here
+    unsigned int maxDepth;
 
     Scene()
     {

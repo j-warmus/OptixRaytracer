@@ -7,12 +7,14 @@ using namespace optix;
 
 rtDeclareVariable(Payload, payload, rtPayload, );
 rtDeclareVariable(float3, backgroundColor, , );
+rtDeclareVariable(Ray, ray, rtCurrentRay, );
 
 RT_PROGRAM void miss()
 {
     // Set the result to be the background color if miss
     // TODO: change the color to backgroundColor
-    payload.radiance = make_float3(1, 0, 0);
+    // payload.radiance = backgroundColor;
+    payload.radiance = normalize(ray.direction);
     payload.done = true;
 }
 

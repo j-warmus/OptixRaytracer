@@ -9,20 +9,13 @@
 
 struct Triangle
 {
-    
-
-    // TODO: define the triangle structure
-
-    
+    optix::float3 vertices[3];
 };
 
 struct Sphere
 {
-
-
-    // TODO: define the sphere structure
-
-
+    optix::float3 center;
+    float radius;
 };
 
 struct Attributes

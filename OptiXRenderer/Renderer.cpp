@@ -41,6 +41,11 @@ void Renderer::initPrograms()
 {
     // Ray generation program
     programs["rayGen"] = createProgram("PinholeCamera.cu", "generateRays");
+    // TODO: read this camera stuff from file
+    programs["rayGen"]["U"]->setFloat(0.f, 0.f, 1.f);
+    programs["rayGen"]["V"]->setFloat(1.f, 0.f, 0.f);
+    programs["rayGen"]["W"]->setFloat(0.f, 1.f, 0.f);
+    programs["rayGen"]["eye"]->setFloat(0.f, 0.f, 0.f);
     context->setRayGenerationProgram(0, programs["rayGen"]);
 
     // Miss progarm

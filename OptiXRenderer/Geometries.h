@@ -16,6 +16,7 @@ struct Sphere
 {
     optix::float3 center;
     float radius;
+    optix::Matrix4x4 transforms;
 };
 
 struct Attributes

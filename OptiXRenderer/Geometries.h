@@ -10,6 +10,7 @@
 struct Triangle
 {
     optix::float3 vertices[3];
+    Attributes attrs;
 };
 
 struct Sphere
@@ -17,6 +18,7 @@ struct Sphere
     optix::float3 center;
     float radius;
     optix::Matrix4x4 transforms;
+    Attributes attrs;
 };
 
 struct Attributes

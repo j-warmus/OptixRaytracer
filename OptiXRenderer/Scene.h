@@ -24,6 +24,16 @@ struct Scene
 
     // TODO: add other variables that you need here
     unsigned int maxDepth;
+    
+    optix::float3 eye;
+    optix::float3 u;
+    optix::float3 v;
+    optix::float3 w;
+
+    float fovy;
+    float fovx;
+
+
 
     Scene()
     {

@@ -96,14 +96,14 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
             optix::float3 w = optix::normalize(eye - center);
             optix::float3 u = optix::normalize(optix::cross(up, w));
             optix::float3 v = optix::cross(w, u);
+            
+            scene->eye = eye;
+            scene->u = u;
+            scene->v = v;
+            scene->w = w;
 
-            // pos, u, v, w are passed in a float3 buffer
-            // fovy, fovx, width, height passed in a float 
-            // TODO pass values to pinholecamera.cu
-            std::vector<optix::float3> cameraPos;
-            std::vector<float> cameraView;
-
-            //Buffer is undefined - should an #include be enough or do I have the wrong idea?
+            scene->fovy = fovy;
+            scene->fovx = fovx;
 
         }
         
@@ -179,11 +179,13 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
         }
         else if (cmd == "tri" && readValues(s, 3, ivalues))
         {
-            scene->triangles.push_back(Triangle(scene->vertices[ivalues[0]], scene->vertices[ivalues[1]], scene->vertices[ivalues[2]], currentAttributes));
+            Triangle t = { {scene->vertices[ivalues[0]], scene->vertices[ivalues[1]], scene->vertices[ivalues[2]]}, currentAttributes };
+            scene->triangles.push_back(t);
         }
         else if (cmd == "sphere" && readValues(s, 4, fvalues))
         {
-            scene->spheres.push_back(Sphere(optix::make_float3(fvalues[0], fvalues[1], fvalues[2]), optix::make_float1(fvalues[3]), transStack.top(), currentAttributes);
+            Sphere s = { optix::make_float3(fvalues[0], fvalues[1], fvalues[2]), fvalues[3], transStack.top(), currentAttributes };
+            scene->spheres.push_back(s);
         }
 
 

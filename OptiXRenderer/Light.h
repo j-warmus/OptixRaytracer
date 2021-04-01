@@ -9,18 +9,18 @@
 
 struct PointLight
 {
+    PointLight(optix::float3 pos, optix::float3 col) { position = pos; color = col; }
+    PointLight() { position = optix::make_float3(0, 0, 0); color = optix::make_float3(0, 0, 0); }
 
-
-    // TODO: define the point light structure
-
-
+    optix::float3 position;
+    optix::float3 color;
 };
 
 struct DirectionalLight
 {
+    DirectionalLight(optix::float3 dir, optix::float3 col) { direction = dir; color = col; }
+    DirectionalLight() { direction = optix::make_float3(0, 0, 0); color = optix::make_float3(0, 0, 0); }
 
-
-    // TODO: define the directional light structure
-
-
+    optix::float3 direction;
+    optix::float3 color;
 };

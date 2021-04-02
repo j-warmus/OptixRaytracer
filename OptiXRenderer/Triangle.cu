@@ -26,7 +26,7 @@ RT_PROGRAM void intersect(int primIndex)
     float3 e1, e2, h, s, q;
     float a, f, u, v;
     e1 = v1 - v0;
-    e2 = v2 - v1;
+    e2 = v2 - v0;
     h = cross(ray.direction, e2);
     a = dot(e1, h);
     if (a > -EPSILON && a < EPSILON) { return; }

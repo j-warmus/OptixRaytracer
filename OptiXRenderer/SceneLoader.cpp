@@ -179,7 +179,13 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
         }
         else if (cmd == "tri" && readValues(s, 3, ivalues))
         {
-        Triangle t = { {scene->vertices[ivalues[0]], scene->vertices[ivalues[1]], scene->vertices[ivalues[2]]}, };// currentAttributes };
+            optix::Matrix4x4 transform = transStack.top();
+
+            optix::float3 v0 = optix::make_float3(transform * optix::make_float4(scene->vertices[ivalues[0]], 1));
+            optix::float3 v1 = optix::make_float3(transform * optix::make_float4(scene->vertices[ivalues[1]], 1));
+            optix::float3 v2 = optix::make_float3(transform * optix::make_float4(scene->vertices[ivalues[2]], 1));
+
+            Triangle t = { {v0, v1, v2}, };// currentAttributes };
             scene->triangles.push_back(t);
         }
         else if (cmd == "sphere" && readValues(s, 4, fvalues))

@@ -36,7 +36,7 @@ RT_PROGRAM void generateRays()
     d.x = tan(fovx / 2.) * (((launchIndex.x + 0.5) - screen.x / 2.) / (screen.x / 2.));
     d.y = tan(fovy / 2.) * (((launchIndex.y + 0.5) - screen.y / 2.) / (screen.y / 2.));
 
-    float3 dir = normalize(d.x * U + d.y * V + W);
+    float3 dir = normalize(d.x * U + d.y * V - W);
     float epsilon = 0.001f; 
 
     // TODO: modify the following lines if you need

@@ -26,7 +26,7 @@ RT_PROGRAM void intersect(int primIndex)
     float3 e1, e2, h, s, q;
     float a, f, u, v;
     e1 = v1 - v0;
-    e2 - v2 - v1;
+    e2 = v2 - v1;
     h = cross(ray.direction, e2);
     a = dot(e1, h);
     if (a > -EPSILON && a < EPSILON) { return; }
@@ -39,6 +39,7 @@ RT_PROGRAM void intersect(int primIndex)
     if (v < 0.f || u + v > 1.f) { return; }
     t = f * dot(e2, q);
 
+    
     // TODO: implement triangle intersection test here
 
     // Report intersection (material programs will handle the rest)

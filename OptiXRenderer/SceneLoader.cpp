@@ -146,23 +146,23 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
         */ 
         else if (cmd == "ambient" && readValues(s, 3, fvalues)) 
         {
-            //currentAttributes.ambient = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
+            currentAttributes.ambient = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
         }
         else if (cmd == "diffuse" && readValues(s, 3, fvalues)) 
         {
-            //currentAttributes.diffuse = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
+            currentAttributes.diffuse = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
         }
         else if (cmd == "specular" && readValues(s, 3, fvalues)) 
         {
-            //currentAttributes.specular = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
+            currentAttributes.specular = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
         }
         else if (cmd == "emission" && readValues(s, 3, fvalues)) 
         {
-            //currentAttributes.emission = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
+            currentAttributes.emission = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
         }
         else if (cmd == "shininess" && readValues(s, 3, fvalues)) 
         {
-            //currentAttributes.shininess = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
+            currentAttributes.shininess = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
         }
 
 
@@ -185,12 +185,12 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
             optix::float3 v1 = optix::make_float3(transform * optix::make_float4(scene->vertices[ivalues[1]], 1));
             optix::float3 v2 = optix::make_float3(transform * optix::make_float4(scene->vertices[ivalues[2]], 1));
 
-            Triangle t = { {v0, v1, v2}, };// currentAttributes };
+            Triangle t = { {v0, v1, v2},  currentAttributes };
             scene->triangles.push_back(t);
         }
         else if (cmd == "sphere" && readValues(s, 4, fvalues))
         {
-        Sphere s = { optix::make_float3(fvalues[0], fvalues[1], fvalues[2]), fvalues[3], transStack.top(), };// currentAttributes };
+        Sphere s = { optix::make_float3(fvalues[0], fvalues[1], fvalues[2]), fvalues[3], transStack.top(), currentAttributes };
             scene->spheres.push_back(s);
         }
 

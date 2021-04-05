@@ -9,7 +9,7 @@ rtBuffer<Sphere> spheres; // a buffer of all spheres
 rtDeclareVariable(Ray, ray, rtCurrentRay, );
 
 // Attributes to be passed to material programs 
-rtDeclareVariable(Attributes, attrib, attribute attrib, );
+rtDeclareVariable(Attributes, attrib, attribute Attribute, );
 
 RT_PROGRAM void intersect(int primIndex)
 {
@@ -61,7 +61,8 @@ RT_PROGRAM void intersect(int primIndex)
     if (rtPotentialIntersection(t))
     {
         // Pass attributes
-
+        attrib = sphere.attrs;
+        // rtPrintf("%f\n", t);
         // TODO: assign attribute variables here
         rtReportIntersection(0);
     }

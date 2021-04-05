@@ -9,7 +9,7 @@ rtBuffer<Triangle> triangles; // a buffer of all spheres
 rtDeclareVariable(Ray, ray, rtCurrentRay, );
 
 // Attributes to be passed to material programs 
-rtDeclareVariable(Attributes, attrib, attribute attrib, );
+rtDeclareVariable(Attributes, attrib, attribute Attribute, );
 
 RT_PROGRAM void intersect(int primIndex)
 {
@@ -38,8 +38,6 @@ RT_PROGRAM void intersect(int primIndex)
     v = f * dot(ray.direction, q);
     if (v < 0.f || u + v > 1.f) { return; }
     t = f * dot(e2, q);
-
-    
     // TODO: implement triangle intersection test here
 
     // Report intersection (material programs will handle the rest)
@@ -48,7 +46,7 @@ RT_PROGRAM void intersect(int primIndex)
         // Pass attributes
 
         // TODO: assign attribute variables here
-
+        attrib = tri.attrs;
         rtReportIntersection(0);
     }
     else { return; }

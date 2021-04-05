@@ -49,6 +49,8 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
 
     std::string str, cmd;
 
+    Attributes currentAttributes;
+
     // Read a line in the scene file in each iteration
     while (std::getline(in, str))
     {
@@ -68,6 +70,10 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
         int ivalues[3];
         std::string svalues[1];
 
+
+        /*
+        *   Image settings
+        */
         if (cmd == "size" && readValues(s, 2, fvalues))
         {
             scene->width = (unsigned int)fvalues[0];
@@ -77,7 +83,172 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
         {
             scene->outputFilename = svalues[0];
         }
-        // TODO: use the examples above to handle other commands
+        else if (cmd == "camera" && readValues(s, 10, fvalues)) {
+            optix::float3 eye = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
+            optix::float3 center = optix::make_float3(fvalues[3], fvalues[4], fvalues[5]);
+            optix::float3 up  = optix::make_float3(fvalues[6], fvalues[7], fvalues[8]);
+            
+            float aspect = (float)scene->width / (float)scene->height;
+            float fovy = fvalues[9] * M_PIf / 180.;
+            float fovx = 2. * atan(tan(fovy / 2.) * aspect);
+
+            // don't change the order of these lines
+            optix::float3 w = optix::normalize(eye - center);
+            optix::float3 u = optix::normalize(optix::cross(up, w));
+            optix::float3 v = optix::cross(w, u);
+            
+            scene->eye = eye;
+            scene->u = u;
+            scene->v = v;
+            scene->w = w;
+
+            scene->fovy = fovy;
+            scene->fovx = fovx;
+
+        }
+        
+
+        /*
+        *   Lights
+        */
+        else if (cmd == "point" && readValues(s, 6, fvalues))
+        {
+            optix::float3 transfpos = optix::make_float3(transStack.top() * optix::make_float4(fvalues[0], fvalues[1], fvalues[2], 1));
+            optix::float3 color = optix::make_float3(fvalues[3], fvalues[4], fvalues[5]);
+            
+            scene->plights.push_back(PointLight(transfpos, color));
+        }
+        else if (cmd == "directional" && readValues(s, 6, fvalues))
+        {
+            optix::float3 transfpos = optix::make_float3(transStack.top() * optix::make_float4(fvalues[0], fvalues[1], fvalues[2], 1));
+            optix::float3 color = optix::make_float3(fvalues[3], fvalues[4], fvalues[5]);
+            
+            scene->dlights.push_back(DirectionalLight(transfpos, color));
+        }
+        else if (cmd == "attenuation" && readValues(s, 3, fvalues))
+        {
+            // TODO I couldn't find where attenuation variables are stored
+            //      Maybe we just add them to Scene.h?
+        }
+
+
+        /*
+         *  Recursion 
+         */
+        else if (cmd == "maxdepth" && readValues(s, 1, ivalues))
+        {
+            scene->maxDepth = ivalues[0];
+        }
+        
+
+        /*
+        *   Materials 
+        */ 
+        else if (cmd == "ambient" && readValues(s, 3, fvalues)) 
+        {
+            currentAttributes.ambient = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
+        }
+        else if (cmd == "diffuse" && readValues(s, 3, fvalues)) 
+        {
+            currentAttributes.diffuse = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
+        }
+        else if (cmd == "specular" && readValues(s, 3, fvalues)) 
+        {
+            currentAttributes.specular = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
+        }
+        else if (cmd == "emission" && readValues(s, 3, fvalues)) 
+        {
+            currentAttributes.emission = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
+        }
+        else if (cmd == "shininess" && readValues(s, 3, fvalues)) 
+        {
+            currentAttributes.shininess = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
+        }
+
+
+        /*
+        *   Geometry
+        */
+        else if (cmd == "maxverts" && readValues(s, 1, ivalues)) 
+        {
+            scene->vertices.reserve(ivalues[0]);
+        }
+        else if (cmd == "vertex" && readValues(s, 3, fvalues))
+        {
+            scene->vertices.push_back(optix::make_float3(fvalues[0], fvalues[1], fvalues[2]));
+        }
+        else if (cmd == "tri" && readValues(s, 3, ivalues))
+        {
+            optix::Matrix4x4 transform = transStack.top();
+
+            optix::float3 v0 = optix::make_float3(transform * optix::make_float4(scene->vertices[ivalues[0]], 1));
+            optix::float3 v1 = optix::make_float3(transform * optix::make_float4(scene->vertices[ivalues[1]], 1));
+            optix::float3 v2 = optix::make_float3(transform * optix::make_float4(scene->vertices[ivalues[2]], 1));
+
+            Triangle t = { {v0, v1, v2},  currentAttributes };
+            scene->triangles.push_back(t);
+        }
+        else if (cmd == "sphere" && readValues(s, 4, fvalues))
+        {
+        Sphere s = { optix::make_float3(fvalues[0], fvalues[1], fvalues[2]), fvalues[3], transStack.top(), currentAttributes };
+            scene->spheres.push_back(s);
+        }
+
+
+        /* 
+        *   Geometry w/ normals     (OPTIONAL)
+        */
+        else if (cmd == "maxvertnorms" && readValues(s, 1, ivalues))
+        {
+            std::cerr << "Command \"maxvertexnorms\" not implemented.\n";
+        }
+        else if (cmd == "vertexnormal" && readValues(s, 6, fvalues))
+        {
+            std::cerr << "Command \"vertexnormal\" not implemented.\n";
+        }
+        else if (cmd == "trinormal" && readValues(s, 3, ivalues))
+        {
+            std::cerr << "Command \"trinormal\" not implemented.\n";
+        }
+
+
+
+        /*
+        *   Transformations
+        */
+        else if (cmd == "translate" && readValues(s, 3, fvalues)) {    
+            rightMultiply(
+                optix::Matrix4x4::translate(optix::make_float3(fvalues[0], fvalues[1], fvalues[2]))
+            );
+        }
+        else if (cmd == "scale" && readValues(s, 3, fvalues)) {
+            rightMultiply(
+                optix::Matrix4x4::scale(optix::make_float3(fvalues[0], fvalues[1], fvalues[2]))
+            );
+        }
+        else if (cmd == "rotate" && readValues(s, 4, fvalues)) {
+            float rads = fvalues[3] * M_PIf / 180.;     // conversion to radians required
+            rightMultiply(
+                optix::Matrix4x4::rotate(rads, optix::make_float3(fvalues[0], fvalues[1], fvalues[2]))
+            );
+        }
+
+        else if (cmd == "pushTransform") {
+            transStack.push(transStack.top());
+        }
+        else if (cmd == "popTransform") {
+            if (transStack.size() <= 1) {
+                std::cerr << "Stack has no elements.  Cannot Pop\n";
+            }
+            else {
+                transStack.pop();
+            }
+        }
+  
+        
+        else {
+            std::cerr << "Unknown Command: " << cmd << " Skipping \n";
+        }
     }
 
     in.close();

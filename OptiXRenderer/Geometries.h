@@ -7,27 +7,26 @@
  * Structures describing different geometries should be defined here.
  */
 
+struct Attributes
+{
+    optix::float3 ambient;
+    optix::float3 diffuse;
+    optix::float3 specular;
+    optix::float3 emission;
+    optix::float3 shininess;
+};
+
 struct Triangle
 {
-    
-
-    // TODO: define the triangle structure
-
-
+    optix::float3 vertices[3];
+    Attributes attrs;
 };
 
 struct Sphere
 {
-
-
-    // TODO: define the sphere structure
-
-
+    optix::float3 center;
+    float radius;
+    optix::Matrix4x4 transforms;
+    Attributes attrs;
 };
 
-struct Attributes
-{
-    
-
-    // TODO: define the attributes structure
-};

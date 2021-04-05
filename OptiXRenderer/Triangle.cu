@@ -10,6 +10,7 @@ rtDeclareVariable(Ray, ray, rtCurrentRay, );
 
 // Attributes to be passed to material programs 
 rtDeclareVariable(Attributes, attrib, attribute Attribute, );
+rtDeclareVariable(float3, normal, attribute Normal, );
 
 RT_PROGRAM void intersect(int primIndex)
 {
@@ -38,15 +39,17 @@ RT_PROGRAM void intersect(int primIndex)
     v = f * dot(ray.direction, q);
     if (v < 0.f || u + v > 1.f) { return; }
     t = f * dot(e2, q);
-    // TODO: implement triangle intersection test here
+    
 
     // Report intersection (material programs will handle the rest)
     if (rtPotentialIntersection(t))
     {
         // Pass attributes
-
-        // TODO: assign attribute variables here
         attrib = tri.attrs;
+        // get and pass normal
+        float3 n1 = normalize(cross((v2 - v1), (v1 - v0)));
+        normal = (dot(ray.direction, n1) < 0) ? n1 : -1.f*n1;
+
         rtReportIntersection(0);
     }
     else { return; }

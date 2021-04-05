@@ -17,10 +17,9 @@ RT_PROGRAM void intersect(int primIndex)
     Sphere sphere = spheres[primIndex];
     float t;
 
-    // TODO: implement sphere intersection test here
-
     optix::Matrix4x4 transinv = sphere.transforms.inverse();
 
+    // pre-transform the ray
     float3 src = optix::make_float3(transinv * optix::make_float4(ray.origin, 1));
     float3 dir = optix::normalize(optix::make_matrix3x3(transinv) * ray.direction);
     float3 eyetocenter = src - sphere.center;
@@ -56,6 +55,11 @@ RT_PROGRAM void intersect(int primIndex)
         }
     }
 
+    // get the location of the (transformed) intersetion
+    optix::float3 hitPos = src + t * dir;
+    // post-transform the hit position and intersection distance
+    hitPos = optix::make_float3(sphere.transforms * optix::make_float4(hitPos, 1));
+    t = optix::dot(hitPos - ray.origin, ray.direction);
 
     // Report intersection (material programs will handle the rest)
     if (rtPotentialIntersection(t))

@@ -2,6 +2,10 @@
 #include <optix_device.h>
 #include "Geometries.h"
 
+#ifndef SQRT3f
+#define SQRT3f      1.73205080756887729352
+#endif
+
 using namespace optix;
 
 rtBuffer<Sphere> spheres; // a buffer of all spheres
@@ -76,11 +80,13 @@ RT_PROGRAM void bound(int primIndex, float result[6])
 {
     Sphere sphere = spheres[primIndex];
 
-    // TODO: implement sphere bouding box
-    result[0] = -1000.f;
-    result[1] = -1000.f;
-    result[2] = -1000.f;
-    result[3] = 1000.f;
-    result[4] = 1000.f;
-    result[5] = 1000.f;
+    // the diagonal of the cube is 2*r*sqrt(3) so the distance from the center to a corner is r*sqrt(3)
+    float boundSize = sphere.radius * SQRT3f;
+
+    result[0] = sphere.center.x - boundSize;
+    result[1] = sphere.center.y - boundSize;
+    result[2] = sphere.center.z - boundSize;
+    result[3] = sphere.center.x + boundSize;
+    result[4] = sphere.center.y + boundSize;
+    result[5] = sphere.center.z + boundSize;
 }

@@ -19,12 +19,12 @@ rtDeclareVariable(rtObject, root, , );
 
 // Declare attibutes 
 rtDeclareVariable(Attributes, attrib, attribute Attribute, );
+rtDeclareVariable(float3, normal, attribute Normal, );
 
 RT_PROGRAM void closestHit()
 {
     // TDOO: calculate the color using the Blinn-Phong reflection model
 
-    // float3 result = make_float3(0, 1, 0);
-    float3 result = attrib.ambient;
+    float3 result = normal/2 + 0.5;
     payload.radiance = result;
 }

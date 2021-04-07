@@ -23,6 +23,9 @@ struct Scene
     std::vector<PointLight> plights;
 
     // TODO: add other variables that you need here
+
+    optix::float3 attenuation;  // index 0 is constant, index 1 is linear, index 2 is quadratic
+
     unsigned int maxDepth = 3;
     
     optix::float3 eye;

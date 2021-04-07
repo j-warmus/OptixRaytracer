@@ -127,8 +127,7 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
         }
         else if (cmd == "attenuation" && readValues(s, 3, fvalues))
         {
-            // TODO I couldn't find where attenuation variables are stored
-            //      Maybe we just add them to Scene.h?
+            scene->attenuation = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
         }
 
 
@@ -160,9 +159,9 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
         {
             currentAttributes.emission = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
         }
-        else if (cmd == "shininess" && readValues(s, 3, fvalues)) 
+        else if (cmd == "shininess" && readValues(s, 1, fvalues)) 
         {
-            currentAttributes.shininess = optix::make_float3(fvalues[0], fvalues[1], fvalues[2]);
+            currentAttributes.shininess = fvalues[0];
         }
 
 

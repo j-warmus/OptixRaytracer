@@ -9,6 +9,8 @@
 
 using namespace optix;
 
+#define epsilon 0.001f
+
 // Declare light buffers
 rtBuffer<PointLight> plights;
 rtBuffer<DirectionalLight> dlights;
@@ -16,15 +18,128 @@ rtBuffer<DirectionalLight> dlights;
 // Declare variables
 rtDeclareVariable(Payload, payload, rtPayload, );
 rtDeclareVariable(rtObject, root, , );
+rtDeclareVariable(float3, attenuation, , );
 
 // Declare attibutes 
 rtDeclareVariable(Attributes, attrib, attribute Attribute, );
 rtDeclareVariable(float3, normal, attribute Normal, );
+rtDeclareVariable(Ray, ray, rtCurrentRay, );
+rtDeclareVariable(float1, t, rtIntersectionDistance, );
+
+
+/*__device__ float3 getBPMult(float3 intersectPos, float3 lightDir, float distanceToLight) {
+    Ray shadowRay = make_Ray(intersectPos, lightDir, 1, epsilon, distanceToLight);
+    ShadowPayload shadowPayload;
+    rtTrace(root, shadowRay, shadowPayload);
+
+
+    if (shadowPayload.isVisible) {
+        float attenuationMult = attenuation.x +
+            attenuation.y * distanceToLight +
+            attenuation.z * distanceToLight * distanceToLight;
+
+        float diffuseMult = fmax(dot(normal, lightDir), 0);
+        float3 lambert = attrib.diffuse * diffuseMult;
+
+        float blinnphongMult = pow(fmax(dot(normal, normalize(-ray.direction + lightDir)), 0), attrib.shininess);
+        float3 blinnphong = attrib.specular * blinnphongMult;
+
+        return (lambert + blinnphong) / attenuationMult;
+    }
+    else {
+        return make_float3(0);
+    }
+}*/
 
 RT_PROGRAM void closestHit()
 {
-    // TDOO: calculate the color using the Blinn-Phong reflection model
+    float3 result;
+    
+    
+    float3 intersectPos = ray.origin + t.x * ray.direction;
 
-    float3 result = normal/2 + 0.5;
+    float3 lightDir;        // TODO optix::normalize(lightPos - intersectPos)
+    float distanceToLight;  // TODO (0 if directional, optix::length(lightPos - intersectPos) if point light)
+
+
+    // POINT LIGHTS
+    for (int i = 0; i < plights.size(); i++) {
+        lightDir = normalize(plights[i].position - intersectPos);
+        distanceToLight = length(plights[i].position - intersectPos);
+        //float3 blinnPhong = getBPMult(intersectPos, lightDir, distanceToLight);
+
+
+        /*
+        *
+        *   BLINN-PHONG CODE
+        *
+        */
+        float attenuationMult = attenuation.x +
+            attenuation.y * distanceToLight +
+            attenuation.z * distanceToLight * distanceToLight;
+
+        float diffuseMult = fmax(dot(normal, lightDir), 0);
+        float3 lambert = attrib.diffuse * diffuseMult;
+
+        float blinnphongMult = pow(fmax(dot(normal, normalize(-ray.direction + lightDir)), 0), attrib.shininess);
+        float3 blinnphong = attrib.specular * blinnphongMult;
+
+        float3 blinnPhongMult = (lambert + blinnphong) / attenuationMult;
+        /*
+       *
+       *
+       *
+       */
+
+        result += make_float3(
+            plights[i].color.x * blinnPhongMult.x,
+            plights[i].color.y * blinnPhongMult.y,
+            plights[i].color.z * blinnPhongMult.z
+        );
+    }
+    
+
+
+
+
+
+    // DIRECTIONAL
+    for (int i = 0; i < dlights.size(); i++) {
+        lightDir = normalize(dlights[i].direction);
+        distanceToLight = 0;
+        //float3 blinnPhong = getBPMult(intersectPos, lightDir, 0); // distance is 0 for directional lights
+
+
+        /*
+        *
+        *   BLINN-PHONG CODE
+        *
+        */
+        float attenuationMult = attenuation.x +
+            attenuation.y * distanceToLight +
+            attenuation.z * distanceToLight * distanceToLight;
+
+        float diffuseMult = fmax(dot(normal, lightDir), 0);
+        float3 lambert = attrib.diffuse * diffuseMult;
+
+        float blinnphongMult = pow(fmax(dot(normal, normalize(-ray.direction + lightDir)), 0), attrib.shininess);
+        float3 blinnphong = attrib.specular * blinnphongMult;
+
+        float3 blinnPhongMult = (lambert + blinnphong) / attenuationMult;
+        /*
+       *
+       *
+       *
+       */
+
+
+
+        result += make_float3(
+            dlights[i].color.x * blinnPhongMult.x,
+            dlights[i].color.y * blinnPhongMult.y,
+            dlights[i].color.z * blinnPhongMult.z
+        );
+    }
+
     payload.radiance = result;
 }

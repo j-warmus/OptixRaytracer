@@ -16,5 +16,5 @@ struct Payload
 
 struct ShadowPayload
 {
-    int isVisible;
+    bool isVisible;
 };

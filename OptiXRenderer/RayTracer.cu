@@ -75,10 +75,12 @@ RT_PROGRAM void closestHit()
         *   BLINN-PHONG CODE
         *
         */
-        //Ray shadowRay = make_Ray(intersectPos, lightDir, 1, epsilon, distanceToLight);
-        //ShadowPayload shadowPayload;
-        //rtTrace(root, shadowRay, shadowPayload);
-        //if (shadowPayload.isVisible){
+        Ray shadowRay = make_Ray(intersectPos, lightDir, 1, epsilon, distanceToLight);
+        ShadowPayload shadowPayload;
+        shadowPayload.isVisible = true;
+        rtTrace(root, shadowRay, shadowPayload);
+        if (shadowPayload.isVisible)
+        {
             float attenuationMult = attenuation.x +
                 attenuation.y * distanceToLight +
                 attenuation.z * distanceToLight * distanceToLight;
@@ -101,7 +103,7 @@ RT_PROGRAM void closestHit()
                 plights[i].color.y * blinnPhongMult.y,
                 plights[i].color.z * blinnPhongMult.z
             );
-        //}
+        }
     }
     
 
@@ -122,30 +124,37 @@ RT_PROGRAM void closestHit()
         *   BLINN-PHONG CODE
         *
         */
-        float attenuationMult = attenuation.x +
-            attenuation.y * distanceToLight +
-            attenuation.z * distanceToLight * distanceToLight;
+        Ray shadowRay = make_Ray(intersectPos, lightDir, 1, epsilon, distanceToLight);
+        ShadowPayload shadowPayload;
+        shadowPayload.isVisible = true;
+        rtTrace(root, shadowRay, shadowPayload);
+        if (shadowPayload.isVisible)
+        {
+            float attenuationMult = attenuation.x +
+                attenuation.y * distanceToLight +
+                attenuation.z * distanceToLight * distanceToLight;
 
-        float diffuseMult = fmax(dot(normal, lightDir), 0);
-        float3 lambert = attrib.diffuse * diffuseMult;
+            float diffuseMult = fmax(dot(normal, lightDir), 0);
+            float3 lambert = attrib.diffuse * diffuseMult;
 
-        float blinnphongMult = pow(fmax(dot(normal, normalize(-ray.direction + lightDir)), 0), attrib.shininess);
-        float3 blinnphong = attrib.specular * blinnphongMult;
+            float blinnphongMult = pow(fmax(dot(normal, normalize(-ray.direction + lightDir)), 0), attrib.shininess);
+            float3 blinnphong = attrib.specular * blinnphongMult;
 
-        float3 blinnPhongMult = (lambert + blinnphong) / attenuationMult;
-        /*
-       *
-       *
-       *
-       */
+            float3 blinnPhongMult = (lambert + blinnphong) / attenuationMult;
+            /*
+           *
+           *
+           *
+           */
 
 
 
-        result += make_float3(
-            dlights[i].color.x * blinnPhongMult.x,
-            dlights[i].color.y * blinnPhongMult.y,
-            dlights[i].color.z * blinnPhongMult.z
-        );
+            result += make_float3(
+                dlights[i].color.x * blinnPhongMult.x,
+                dlights[i].color.y * blinnPhongMult.y,
+                dlights[i].color.z * blinnPhongMult.z
+            );
+        }
     }
 
     payload.radiance = result;

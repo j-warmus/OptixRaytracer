@@ -54,31 +54,26 @@ rtDeclareVariable(float1, t, rtIntersectionDistance, );
 RT_PROGRAM void closestHit()
 {
     float3 result = make_float3(0.f,0.f,0.f);
-    
+    Ray shadowRay;
+    ShadowPayload shadowPayload;
     
     float3 intersectPos = ray.origin + t.x * ray.direction;
 
     float3 lightDir;        // TODO optix::normalize(lightPos - intersectPos)
     float distanceToLight;  // TODO (0 if directional, optix::length(lightPos - intersectPos) if point light)
-    //rtPrintf("%i", plights.size());
-
+    
+    //rtPrintf("Casting magic spell to make shadows work. %i\n", 1);
+   
     // POINT LIGHTS
     for (int i = 0; i < plights.size(); i++) {
         lightDir = normalize(plights[i].position - intersectPos);
         distanceToLight = length(plights[i].position - intersectPos);
 
-        //float3 blinnPhong = getBPMult(intersectPos, lightDir, distanceToLight);
-
-
-        /*
-        *
-        *   BLINN-PHONG CODE
-        *
-        */
-        Ray shadowRay = make_Ray(intersectPos, lightDir, 1, epsilon, distanceToLight);
-        ShadowPayload shadowPayload;
+        
+        shadowRay = make_Ray(intersectPos, lightDir, 1, epsilon, distanceToLight);
         shadowPayload.isVisible = true;
         rtTrace(root, shadowRay, shadowPayload);
+
         if (shadowPayload.isVisible)
         {
             float attenuationMult = attenuation.x +
@@ -124,10 +119,11 @@ RT_PROGRAM void closestHit()
         *   BLINN-PHONG CODE
         *
         */
-        Ray shadowRay = make_Ray(intersectPos, lightDir, 1, epsilon, distanceToLight);
-        ShadowPayload shadowPayload;
+        
+        shadowRay = make_Ray(intersectPos, lightDir, 1, epsilon, distanceToLight);
         shadowPayload.isVisible = true;
         rtTrace(root, shadowRay, shadowPayload);
+        
         if (shadowPayload.isVisible)
         {
             float attenuationMult = attenuation.x +

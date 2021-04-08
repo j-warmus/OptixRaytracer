@@ -24,7 +24,7 @@ struct Scene
 
     // TODO: add other variables that you need here
 
-    optix::float3 attenuation;  // index 0 is constant, index 1 is linear, index 2 is quadratic
+    optix::float3 attenuation = optix::make_float3(1.f,0.f,0.f);  // index 0 is constant, index 1 is linear, index 2 is quadratic
 
     unsigned int maxDepth = 3;
     

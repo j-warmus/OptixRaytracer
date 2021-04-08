@@ -62,6 +62,7 @@ RT_PROGRAM void intersect(int primIndex)
 
     // get the location of the (transformed) intersetion
     optix::float3 hitPos = src + t * dir;
+    float3 transfnormal = normalize(hitPos - sphere.center);
     // post-transform the hit position and intersection distance
     hitPos = optix::make_float3(sphere.transforms * optix::make_float4(hitPos, 1));
     t = optix::dot(hitPos - ray.origin, ray.direction);
@@ -72,7 +73,7 @@ RT_PROGRAM void intersect(int primIndex)
         // Pass attributes
         attrib = sphere.attrs;
         // calc and pass normal
-        normal = hitPos - make_float3(sphere.transforms * make_float4(sphere.center,1));
+        normal = normalize(make_matrix3x3(sphere.transforms.inverse().transpose()) * transfnormal);
         rtReportIntersection(0);
     }
 }

@@ -49,7 +49,13 @@ std::shared_ptr<Scene> SceneLoader::load(std::string sceneFilename)
 
     std::string str, cmd;
 
+    // material properties for the various objects in the scene
     Attributes currentAttributes;
+    currentAttributes.ambient = optix::make_float3(.2f, .2f, .2f); 
+    currentAttributes.diffuse = optix::make_float3(0, 0, 0);
+    currentAttributes.specular = optix::make_float3(0, 0, 0); 
+    currentAttributes.emission = optix::make_float3(0, 0, 0); 
+    currentAttributes.shininess = 0;
 
     // Read a line in the scene file in each iteration
     while (std::getline(in, str))

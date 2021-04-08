@@ -15,7 +15,7 @@ RT_PROGRAM void miss()
     // TODO: change the color to backgroundColor
     // payload.radiance = backgroundColor;
 
-    payload.radiance = (normalize(ray.direction) + 1) / 2;
+    payload.radiance = backgroundColor;
     payload.done = true;
 }
 

@@ -55,7 +55,7 @@ RT_PROGRAM void intersect(int primIndex)
     else { return; }
 }
 
-// helper function for determining the bounding box coordinates
+// helper functions for determining the bounding box coordinates
 float min3(float a, float b, float c) {
     return a < b ? (a < c ? a : c) : (b < c ? b : c);
 }
@@ -71,6 +71,7 @@ RT_PROGRAM void bound(int primIndex, float result[6])
     result[0] = min3(tri.vertices[0].x, tri.vertices[1].x, tri.vertices[2].x);
     result[1] = min3(tri.vertices[0].y, tri.vertices[1].y, tri.vertices[2].y);
     result[2] = min3(tri.vertices[0].z, tri.vertices[1].z, tri.vertices[2].z);
+
     result[3] = max3(tri.vertices[0].x, tri.vertices[1].x, tri.vertices[2].x);
     result[4] = max3(tri.vertices[0].y, tri.vertices[1].y, tri.vertices[2].y);
     result[5] = max3(tri.vertices[0].z, tri.vertices[1].z, tri.vertices[2].z);

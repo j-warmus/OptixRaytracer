@@ -43,6 +43,7 @@ RT_PROGRAM void generateRays()
     // Shoot a ray to compute the color of the current pixel
     Ray ray = make_Ray(eye, dir, 0, epsilon, RT_DEFAULT_MAX);
     Payload payload;
+    payload.depth = 0;
     rtTrace(root, ray, payload);
 
     // Write the result

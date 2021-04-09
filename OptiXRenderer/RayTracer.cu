@@ -19,7 +19,7 @@ rtBuffer<DirectionalLight> dlights;
 rtDeclareVariable(Payload, payload, rtPayload, );
 rtDeclareVariable(rtObject, root, , );
 rtDeclareVariable(float3, attenuation, , );
-
+rtDeclareVariable(uint, tracedepth, , );
 // Declare attibutes 
 rtDeclareVariable(Attributes, attrib, attribute Attribute, );
 rtDeclareVariable(float3, normal, attribute Normal, );
@@ -53,24 +53,24 @@ rtDeclareVariable(float1, t, rtIntersectionDistance, );
 
 RT_PROGRAM void closestHit()
 {
-    float3 result = make_float3(0.f,0.f,0.f);
+    float3 result = make_float3(0.f, 0.f, 0.f);
     Ray shadowRay;
     ShadowPayload shadowPayload;
-    
+
     float3 intersectPos = ray.origin + t.x * ray.direction;
 
-    float3 lightDir = make_float3(0,0,0);        // TODO optix::normalize(lightPos - intersectPos)
+    float3 lightDir = make_float3(0, 0, 0);        // TODO optix::normalize(lightPos - intersectPos)
     float distanceToLight = 0;  // TODO (0 if directional, optix::length(lightPos - intersectPos) if point light)
-    
+
     //rtPrintf("Casting magic spell to make shadows work. %i\n", 1);
 
     result += attrib.ambient + attrib.emission;
-   
+
     // POINT LIGHTS
     for (int i = 0; i < plights.size(); i++) {
         lightDir = normalize(plights[i].position - intersectPos);       // surfaces look closer to how they should when not normalized, but center spheres are still weird.
         distanceToLight = length(plights[i].position - intersectPos);
-        
+
         shadowRay = make_Ray(intersectPos, lightDir, 1, epsilon, distanceToLight);
         shadowPayload.isVisible = true;
         rtTrace(root, shadowRay, shadowPayload);
@@ -101,7 +101,7 @@ RT_PROGRAM void closestHit()
             );
         }
     }
-    
+
 
 
 
@@ -120,11 +120,11 @@ RT_PROGRAM void closestHit()
         *   BLINN-PHONG CODE
         *
         */
-        
+
         shadowRay = make_Ray(intersectPos, lightDir, 1, epsilon, distanceToLight);
         shadowPayload.isVisible = true;
         rtTrace(root, shadowRay, shadowPayload);
-        
+
         if (shadowPayload.isVisible)
         {
             float attenuationMult = attenuation.x +
@@ -152,7 +152,19 @@ RT_PROGRAM void closestHit()
         }
     }
 
-
+    // RECURSIVE
+    if (payload.depth < tracedepth - 2){
+        float3 refDir = normalize(ray.direction + 2 * (dot(-ray.direction, normal)) * normal);
+        float3 refPos = intersectPos + epsilon * refDir;
+        payload.depth += 1;
+        
+        Ray refRay = make_Ray(refPos, refDir, 0, epsilon, RT_DEFAULT_MAX);
+        rtTrace(root, refRay, payload);
+        
+        // Accumulate radiance
+        result += attrib.specular * payload.radiance;
+        
+    }
 
     payload.radiance = result;
 }

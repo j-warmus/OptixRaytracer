@@ -73,6 +73,7 @@ void Renderer::initPrograms()
     programs["raytracer"] = createProgram("RayTracer.cu", "closestHit");
     // attenuation variables for lighting calculations
     programs["raytracer"]["attenuation"]->setFloat(scene->attenuation);
+    programs["raytracer"]["tracedepth"]->setUint(scene->maxDepth);
 
     // Shadow Caster
     programs["shadowCaster"] = createProgram("Common.cu", "anyHit");

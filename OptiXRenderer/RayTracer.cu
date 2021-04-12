@@ -56,12 +56,13 @@ RT_PROGRAM void closestHit()
     float3 result = make_float3(0.f,0.f,0.f);
     Ray shadowRay;
     ShadowPayload shadowPayload;
-    
+
     float3 intersectPos = ray.origin + t.x * ray.direction;
 
     float3 lightDir = make_float3(0,0,0);        // TODO optix::normalize(lightPos - intersectPos)
     float distanceToLight = 0;  // TODO (0 if directional, optix::length(lightPos - intersectPos) if point light)
-    
+
+
     //rtPrintf("Casting magic spell to make shadows work. %i\n", 1);
 
     result += attrib.ambient + attrib.emission;
@@ -153,6 +154,12 @@ RT_PROGRAM void closestHit()
     }
 
 
+    payload.depth -= 1;
 
+    payload.dir = normalize(ray.direction + 2 * dot(-ray.direction, normal) * normal);
+    payload.origin = intersectPos;
+    
     payload.radiance = result;
+    payload.specular = attrib.specular;
+
 }

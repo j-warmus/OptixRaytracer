@@ -14,9 +14,16 @@ RT_PROGRAM void miss()
     // Set the result to be the background color if miss
     // TODO: change the color to backgroundColor
     // payload.radiance = backgroundColor;
+    //if (payload.depth < 5) {
+    //    printf("missed\n");
+    //}
 
     payload.radiance = backgroundColor;
-    payload.done = true;
+    payload.specular = make_float3(1.f, 1.f, 1.f);
+     
+    //if (ray.ray_type == 0) {
+        payload.done = true;
+   // }
 }
 
 RT_PROGRAM void exception()

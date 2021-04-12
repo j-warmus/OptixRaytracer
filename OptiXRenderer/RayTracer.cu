@@ -153,7 +153,7 @@ RT_PROGRAM void closestHit()
     }
 
     // RECURSIVE
-    if (payload.depth < tracedepth - 2){
+    if (payload.depth < tracedepth){
         float3 refDir = normalize(ray.direction + 2 * (dot(-ray.direction, normal)) * normal);
         float3 refPos = intersectPos + epsilon * refDir;
         payload.depth += 1;

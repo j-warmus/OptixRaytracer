@@ -21,9 +21,9 @@ RT_PROGRAM void miss()
     payload.radiance = backgroundColor;
     payload.specular = make_float3(1.f, 1.f, 1.f);
      
-    //if (ray.ray_type == 0) {
+    if (ray.ray_type == 0) {
         payload.done = true;
-   // }
+    }
 }
 
 RT_PROGRAM void exception()

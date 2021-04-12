@@ -50,7 +50,7 @@ RT_PROGRAM void generateRays()
     bool depthset = false;
     //payload.done = false;
 
-    bool first_pass = true;
+    float3 specAccum = make_float3(1.f, 1.f, 1.f);
 
     do {
         // Set max depth in the payload
@@ -72,14 +72,9 @@ RT_PROGRAM void generateRays()
         //     payload.origin.x, payload.origin.y, payload.origin.z);
 
         // Accumulate radiance
-        if (first_pass) {
-            result += payload.radiance;
-            first_pass = false;
-        }
-        else
-        {
-            result += payload.radiance * payload.specular;
-        }
+        
+        result += payload.radiance * specAccum;
+        specAccum *= payload.specular;
 
         // Prepare to shoot next ray
         origin = payload.origin;

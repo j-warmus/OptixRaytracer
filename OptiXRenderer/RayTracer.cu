@@ -122,7 +122,7 @@ RT_PROGRAM void closestHit()
         *
         */
         
-        shadowRay = make_Ray(intersectPos, lightDir, 1, epsilon, distanceToLight);
+        shadowRay = make_Ray(intersectPos, lightDir, 1, epsilon, RT_DEFAULT_MAX);
         shadowPayload.isVisible = true;
         rtTrace(root, shadowRay, shadowPayload);
         

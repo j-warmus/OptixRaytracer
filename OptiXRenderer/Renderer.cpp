@@ -12,7 +12,7 @@ Renderer::Renderer(std::shared_ptr<Scene> scene) : scene(scene)
     context->setEntryPointCount(1); // only one entry point
     context->setPrintEnabled(true); // enable the use of rtPrintf in programs
     context->setPrintBufferSize(2048); 
-    context->setMaxTraceDepth(scene->maxDepth + 3); // Set maximum recursion depth.
+    context->setMaxTraceDepth(scene->maxDepth); // Set maximum recursion depth.
 
     // Create the resultBuffer
     resultBuffer = context->createBuffer(RT_BUFFER_OUTPUT); // only device can write
@@ -140,6 +140,7 @@ void Renderer::buildScene()
     // Set width and height
     resultBuffer->setSize(width, height);
     programs["rayGen"]["resultBuffer"]->set(resultBuffer);
+    programs["rayGen"]["scenedepth"]->setUint(scene->maxDepth);
     context["width"]->setFloat(width);
     context["height"]->setFloat(height);
 
@@ -150,7 +151,7 @@ void Renderer::buildScene()
     material->setAnyHitProgram(1, programs["shadowCaster"]);
 
     // TODO: pass data to programs here
-
+    
     // Create buffers and pass them to Optix programs that the buffers
     Buffer triBuffer = createBuffer(scene->triangles);
     programs["triInt"]["triangles"]->set(triBuffer);

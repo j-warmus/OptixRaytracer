@@ -24,6 +24,7 @@ rtDeclareVariable(float3, V, , );
 rtDeclareVariable(float3, W, , );
 rtDeclareVariable(float, fovx, , );
 rtDeclareVariable(float, fovy, , );
+rtDeclareVariable(uint, scenedepth, , );
 
 RT_PROGRAM void generateRays()
 {
@@ -55,7 +56,7 @@ RT_PROGRAM void generateRays()
     do {
         // Set max depth in the payload
         if (!depthset) {
-            payload.depth = 5;
+            payload.depth = scenedepth;
             depthset = true;
         }
         
